@@ -19,39 +19,35 @@ function AppContent() {
   const [activeTab, setActiveTab] = useState<Tab>('bind')
   const { initialized, loading, error } = useFHEVM()
 
-  if (loading) {
-    return (
-      <div className="app-loading">
-        <h2>正在初始化 Hidden Social...</h2>
-        <p>正在加载 FHE 加密模块，请稍候...</p>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="app-error">
-        <h2>初始化失败</h2>
-        <p>无法加载 FHE 加密模块: {error.message}</p>
-        <button onClick={() => window.location.reload()}>重试</button>
-      </div>
-    )
-  }
-
-  if (!initialized) {
-    return (
-      <div className="app-error">
-        <h2>FHE 未初始化</h2>
-        <p>请刷新页面重试</p>
-      </div>
-    )
-  }
-
   return (
     <div className="app">
       <header className="app-header">
         <h1>🕵️ Hidden Social</h1>
         <p>基于同态加密的匿名社交支付平台</p>
+        
+        {/* FHE 状态指示器 */}
+        <div className="fhe-status">
+          {loading && (
+            <div className="status-indicator loading">
+              <span className="spinner">⏳</span>
+              <span>正在初始化加密模块...</span>
+            </div>
+          )}
+          {error && (
+            <div className="status-indicator error">
+              <span>❌</span>
+              <span>加密模块初始化失败: {error.message}</span>
+              <button onClick={() => window.location.reload()} className="retry-btn">重试</button>
+            </div>
+          )}
+          {initialized && (
+            <div className="status-indicator success">
+              <span>✅</span>
+              <span>加密模块已就绪</span>
+            </div>
+          )}
+        </div>
+        
         <WalletConnect />
       </header>
 

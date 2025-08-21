@@ -9,18 +9,26 @@ export function useFHEVM() {
   useEffect(() => {
     const initialize = async () => {
       try {
+        setLoading(true)
+        setError(null)
         await initFHEVM()
         setInitialized(true)
-        setError(null)
+        console.log('FHE initialization completed successfully')
       } catch (err) {
         console.error('Failed to initialize FHEVM:', err)
         setError(err as Error)
+        setInitialized(false)
       } finally {
         setLoading(false)
       }
     }
 
-    initialize()
+    // 延迟一点时间让UI先渲染出来
+    const timer = setTimeout(() => {
+      initialize()
+    }, 100)
+
+    return () => clearTimeout(timer)
   }, [])
 
   const getInstance = () => {

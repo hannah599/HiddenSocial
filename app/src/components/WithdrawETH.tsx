@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAccount, useWalletClient, usePublicClient } from 'wagmi'
 import { parseEther } from 'viem'
 import { encryptAmount, userDecrypt } from '@/utils/fhe'
+import { useFHEVM } from '@/hooks/useFHEVM'
 import { HIDDEN_SOCIAL_ADDRESS, HIDDEN_SOCIAL_ABI } from '@/contracts/config'
 
 export function WithdrawETH() {
@@ -14,11 +15,17 @@ export function WithdrawETH() {
   const { address } = useAccount()
   const { data: walletClient } = useWalletClient()
   const publicClient = usePublicClient()
+  const { initialized: fheInitialized, loading: fheLoading } = useFHEVM()
 
   // 查看加密余额
   const handleCheckBalance = async () => {
     if (!address || !walletClient || !publicClient) {
       setMessage('请先连接钱包')
+      return
+    }
+
+    if (!fheInitialized) {
+      setMessage('加密模块尚未初始化，请稍候再试')
       return
     }
 
@@ -63,6 +70,11 @@ export function WithdrawETH() {
       return
     }
 
+    if (!fheInitialized) {
+      setMessage('加密模块尚未初始化，请稍候再试')
+      return
+    }
+
     setLoading(true)
     setMessage('')
 
@@ -102,6 +114,11 @@ export function WithdrawETH() {
       return
     }
 
+    if (!fheInitialized) {
+      setMessage('加密模块尚未初始化，请稍候再试')
+      return
+    }
+
     setLoading(true)
     setMessage('')
 
@@ -133,9 +150,9 @@ export function WithdrawETH() {
       <div className="balance-section">
         <button 
           onClick={handleCheckBalance}
-          disabled={decrypting || !address}
+          disabled={decrypting || !address || !fheInitialized}
         >
-          {decrypting ? '查询中...' : '查看加密余额'}
+          {decrypting ? '查询中...' : fheLoading ? '等待加密模块...' : '查看加密余额'}
         </button>
         {balance && (
           <div className="balance-display">
@@ -162,9 +179,9 @@ export function WithdrawETH() {
         </div>
         <button 
           onClick={handleWithdraw}
-          disabled={loading || !address}
+          disabled={loading || !address || !fheInitialized}
         >
-          {loading ? '提取中...' : '提取指定金额'}
+          {loading ? '提取中...' : fheLoading ? '等待加密模块...' : '提取指定金额'}
         </button>
       </div>
 
@@ -172,10 +189,10 @@ export function WithdrawETH() {
       <div className="batch-withdraw-section">
         <button 
           onClick={handleWithdrawAll}
-          disabled={loading || !address}
+          disabled={loading || !address || !fheInitialized}
           className="batch-withdraw-btn"
         >
-          {loading ? '提取中...' : '提取所有余额'}
+          {loading ? '提取中...' : fheLoading ? '等待加密模块...' : '提取所有余额'}
         </button>
         <p className="note">批量提取会将您的所有加密余额一次性提取到钱包</p>
       </div>

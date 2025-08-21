@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAccount, useWalletClient } from 'wagmi'
 import { parseEther } from 'viem'
 import { encryptXAccountId, encryptAmount } from '@/utils/fhe'
+import { useFHEVM } from '@/hooks/useFHEVM'
 import { HIDDEN_SOCIAL_ADDRESS, HIDDEN_SOCIAL_ABI } from '@/contracts/config'
 
 export function SendToXAccount() {
@@ -12,6 +13,7 @@ export function SendToXAccount() {
   
   const { address } = useAccount()
   const { data: walletClient } = useWalletClient()
+  const { initialized: fheInitialized, loading: fheLoading } = useFHEVM()
 
   const handleSend = async () => {
     if (!xAccountId.trim()) {
@@ -26,6 +28,11 @@ export function SendToXAccount() {
     
     if (!address || !walletClient) {
       setMessage('请先连接钱包')
+      return
+    }
+
+    if (!fheInitialized) {
+      setMessage('加密模块尚未初始化，请稍候再试')
       return
     }
 
@@ -98,9 +105,9 @@ export function SendToXAccount() {
       </div>
       <button 
         onClick={handleSend}
-        disabled={loading || !address}
+        disabled={loading || !address || !fheInitialized}
       >
-        {loading ? '发送中...' : '发送ETH'}
+        {loading ? '发送中...' : fheLoading ? '等待加密模块...' : '发送ETH'}
       </button>
       {message && (
         <div className={`message ${message.includes('失败') ? 'error' : 'success'}`}>

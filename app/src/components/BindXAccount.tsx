@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAccount, useWalletClient } from 'wagmi'
 import { encryptXAccountId } from '@/utils/fhe'
+import { useFHEVM } from '@/hooks/useFHEVM'
 import { HIDDEN_SOCIAL_ADDRESS, HIDDEN_SOCIAL_ABI } from '@/contracts/config'
 
 export function BindXAccount() {
@@ -10,6 +11,7 @@ export function BindXAccount() {
   
   const { address } = useAccount()
   const { data: walletClient } = useWalletClient()
+  const { initialized: fheInitialized, loading: fheLoading } = useFHEVM()
 
   const handleBind = async () => {
     if (!xAccountId.trim()) {
@@ -19,6 +21,11 @@ export function BindXAccount() {
     
     if (!address || !walletClient) {
       setMessage('请先连接钱包')
+      return
+    }
+
+    if (!fheInitialized) {
+      setMessage('加密模块尚未初始化，请稍候再试')
       return
     }
 
@@ -67,9 +74,9 @@ export function BindXAccount() {
       </div>
       <button 
         onClick={handleBind}
-        disabled={loading || !address}
+        disabled={loading || !address || !fheInitialized}
       >
-        {loading ? '绑定中...' : '绑定X账号'}
+        {loading ? '绑定中...' : fheLoading ? '等待加密模块...' : '绑定X账号'}
       </button>
       {message && (
         <div className={`message ${message.includes('失败') ? 'error' : 'success'}`}>
