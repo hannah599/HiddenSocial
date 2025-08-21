@@ -2,18 +2,17 @@ import { task } from "hardhat/config";
 import type { TaskArguments } from "hardhat/types";
 
 task("hiddensocial:bind", "Bind X account to encrypted address")
-  .addParam("contract", "The contract's address")
   .addParam("xaccount", "X account ID (e.g., @username)")
   .addParam("address", "User's wallet address to encrypt")
   .setAction(async function (taskArguments: TaskArguments, hre) {
-    const { fhevm, ethers } = hre;
+    const { fhevm, ethers, deployments } = hre;
     const [signer] = await ethers.getSigners();
     
-    const contractFactory = await ethers.getContractFactory("HiddenSocial");
-    const contract = contractFactory.attach(taskArguments.contract);
+    const HiddenSocialDeployment = await deployments.get("HiddenSocial");
+    const contract = await ethers.getContractAt("HiddenSocial", HiddenSocialDeployment.address);
     
     // Create encrypted input
-    const input = fhevm.createEncryptedInput(taskArguments.contract, signer.address);
+    const input = fhevm.createEncryptedInput(HiddenSocialDeployment.address, signer.address);
     input.addAddress(taskArguments.address);
     const encryptedInput = await input.encrypt();
     
@@ -32,15 +31,14 @@ task("hiddensocial:bind", "Bind X account to encrypted address")
   });
 
 task("hiddensocial:send", "Send ETH to X account")
-  .addParam("contract", "The contract's address")
   .addParam("xaccount", "Target X account ID")
   .addParam("amount", "Amount of ETH to send (in ETH)")
   .setAction(async function (taskArguments: TaskArguments, hre) {
-    const { ethers } = hre;
+    const { ethers, deployments } = hre;
     const [signer] = await ethers.getSigners();
     
-    const contractFactory = await ethers.getContractFactory("HiddenSocial");
-    const contract = contractFactory.attach(taskArguments.contract);
+    const HiddenSocialDeployment = await deployments.get("HiddenSocial");
+    const contract = await ethers.getContractAt("HiddenSocial", HiddenSocialDeployment.address);
     
     const amountWei = ethers.parseEther(taskArguments.amount);
     
@@ -55,53 +53,47 @@ task("hiddensocial:send", "Send ETH to X account")
     console.log("ETH sent successfully!");
   });
 
-task("hiddensocial:withdraw", "Perform anonymous withdrawal")
-  .addParam("contract", "The contract's address")
+task("hiddensocial:withdraw", "Request withdrawal from X account")
+  .addParam("xaccount", "X account ID to withdraw from")
   .setAction(async function (taskArguments: TaskArguments, hre) {
-    const { ethers } = hre;
+    const { ethers, deployments } = hre;
     const [signer] = await ethers.getSigners();
     
-    const contractFactory = await ethers.getContractFactory("HiddenSocial");
-    const contract = contractFactory.attach(taskArguments.contract);
+    const HiddenSocialDeployment = await deployments.get("HiddenSocial");
+    const contract = await ethers.getContractAt("HiddenSocial", HiddenSocialDeployment.address);
     
-    console.log("Performing anonymous withdrawal...");
+    console.log("Requesting withdrawal for X account:", taskArguments.xaccount);
     
-    const transaction = await contract.anonymousWithdraw();
+    const transaction = await contract.requestWithdrawal(taskArguments.xaccount);
     await transaction.wait();
     
     console.log("Transaction hash:", transaction.hash);
-    console.log("Anonymous withdrawal completed!");
+    console.log("Withdrawal request submitted!");
   });
 
 task("hiddensocial:balance", "Get contract balance and info")
-  .addParam("contract", "The contract's address")
   .setAction(async function (taskArguments: TaskArguments, hre) {
-    const { ethers } = hre;
+    const { ethers, deployments } = hre;
     
-    const contractFactory = await ethers.getContractFactory("HiddenSocial");
-    const contract = contractFactory.attach(taskArguments.contract);
+    const HiddenSocialDeployment = await deployments.get("HiddenSocial");
+    const contract = await ethers.getContractAt("HiddenSocial", HiddenSocialDeployment.address);
     
     const contractBalance = await contract.getContractBalance();
     const recipientInfo = await contract.getRecipientInfo();
-    const withdrawalAmount = await contract.WITHDRAWAL_AMOUNT();
-    const batchCount = await contract.BATCH_WITHDRAWAL_COUNT();
     
-    console.log("Contract address:", taskArguments.contract);
+    console.log("Contract address:", HiddenSocialDeployment.address);
     console.log("Contract balance:", ethers.formatEther(contractBalance), "ETH");
     console.log("Current recipient index:", recipientInfo[0].toString());
     console.log("Total recipients:", recipientInfo[1].toString());
-    console.log("Withdrawal amount per recipient:", ethers.formatEther(withdrawalAmount), "ETH");
-    console.log("Batch withdrawal count:", batchCount.toString());
   });
 
 task("hiddensocial:check", "Check if X account is bound")
-  .addParam("contract", "The contract's address")
   .addParam("xaccount", "X account ID to check")
   .setAction(async function (taskArguments: TaskArguments, hre) {
-    const { ethers } = hre;
+    const { ethers, deployments } = hre;
     
-    const contractFactory = await ethers.getContractFactory("HiddenSocial");
-    const contract = contractFactory.attach(taskArguments.contract);
+    const HiddenSocialDeployment = await deployments.get("HiddenSocial");
+    const contract = await ethers.getContractAt("HiddenSocial", HiddenSocialDeployment.address);
     
     const isBound = await contract.isXAccountBound(taskArguments.xaccount);
     

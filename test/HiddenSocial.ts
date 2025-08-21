@@ -123,60 +123,81 @@ describe("HiddenSocial", function () {
     });
   });
 
-  describe("Anonymous Withdrawal", function () {
+  describe("Withdrawal Functionality", function () {
     beforeEach(async function () {
-      // Bind and fund 10 different X accounts to enable anonymous withdrawal
-      for (let i = 0; i < 10; i++) {
-        const xAccountId = `@testuser${i}`;
-        const signer = i < 3 ? [user1, user2, user3][i] : user1; // Use available signers
-        
-        // Bind account
-        const input = fhevm.createEncryptedInput(contractAddress, signer.address);
-        input.addAddress(signer.address);
-        const encryptedInput = await input.encrypt();
+      // Bind user1's X account and send some ETH to it
+      const xAccountId = "@testuser1";
+      const input = fhevm.createEncryptedInput(contractAddress, user1.address);
+      input.addAddress(user1.address);
+      const encryptedInput = await input.encrypt();
 
-        await contract.connect(signer).bindXAccount(
-          xAccountId,
-          encryptedInput.handles[0],
-          encryptedInput.inputProof
-        );
+      await contract.connect(user1).bindXAccount(
+        xAccountId,
+        encryptedInput.handles[0],
+        encryptedInput.inputProof
+      );
 
-        // Send funds to account
-        const sendAmount = ethers.parseEther("0.1"); // Send more than withdrawal amount
-        await contract.connect(owner).sendToXAccount(xAccountId, { value: sendAmount });
-      }
+      // Send funds to the account
+      const sendAmount = ethers.parseEther("0.1");
+      await contract.connect(user2).sendToXAccount(xAccountId, { value: sendAmount });
     });
 
-    it("Should perform anonymous withdrawal successfully", async function () {
-      const withdrawalAmount = await contract.WITHDRAWAL_AMOUNT();
-      const batchCount = await contract.BATCH_WITHDRAWAL_COUNT();
-      const expectedTotal = withdrawalAmount * batchCount;
+    it("Should request withdrawal successfully", async function () {
+      const xAccountId = "@testuser1";
 
-      const initialBalance = await ethers.provider.getBalance(user1.address);
-
-      const tx = await contract.connect(user1).anonymousWithdraw();
-      const receipt = await tx.wait();
-      const gasUsed = receipt!.gasUsed * receipt!.gasPrice;
-
-      const finalBalance = await ethers.provider.getBalance(user1.address);
-      const actualReceived = finalBalance - initialBalance + gasUsed;
-
-      expect(actualReceived).to.equal(expectedTotal);
-
+      // Request withdrawal
+      const tx = await contract.connect(user1).requestWithdrawal(xAccountId);
+      
+      // Should emit withdrawal request event
       await expect(tx)
-        .to.emit(contract, "BatchWithdrawal")
-        .withArgs(user1.address, expectedTotal);
+        .to.emit(contract, "WithdrawalRequested")
     });
 
-    it("Should not allow withdrawal with insufficient recipients", async function () {
-      // Deploy a new contract without setting up recipients
-      const contractFactory = await ethers.getContractFactory("HiddenSocial");
-      const newContract = await contractFactory.deploy();
-      await newContract.waitForDeployment();
-
+    it("Should not allow withdrawal for unbound account", async function () {
       await expect(
-        newContract.connect(user1).anonymousWithdraw()
-      ).to.be.revertedWith("Not enough recipients for anonymous withdrawal");
+        contract.connect(user1).requestWithdrawal("@nonexistent")
+      ).to.be.revertedWith("X account not bound");
+    });
+
+    it("Should not allow withdrawal with empty X account ID", async function () {
+      await expect(
+        contract.connect(user1).requestWithdrawal("")
+      ).to.be.revertedWith("X account ID cannot be empty");
+    });
+
+    it("Should allow withdrawal request from any user but only process for correct owner", async function () {
+      const xAccountId = "@testuser1";
+
+      // user2 can request withdrawal from user1's account, but it won't be processed in callback
+      // since the decrypted address won't match user2's address
+      const tx = await contract.connect(user2).requestWithdrawal(xAccountId);
+      
+      // Should emit withdrawal request event
+      await expect(tx)
+        .to.emit(contract, "WithdrawalRequested");
+        
+      // The actual authorization happens in the callback when addresses are compared
+    });
+
+    it("Should track withdrawal requests correctly", async function () {
+      const xAccountId = "@testuser1";
+
+      // Request withdrawal
+      await contract.connect(user1).requestWithdrawal(xAccountId);
+
+      // Check withdrawal request details
+      const request = await contract.getWithdrawalRequest(1);
+      expect(request.xAccountId).to.equal(xAccountId);
+      expect(request.requester).to.equal(user1.address);
+      expect(request.isProcessed).to.be.false;
+
+      // Check processed status
+      const isProcessed = await contract.isWithdrawalProcessed(1);
+      expect(isProcessed).to.be.false;
+
+      // Check total withdrawal requests
+      const totalRequests = await contract.getTotalWithdrawalRequests();
+      expect(totalRequests).to.equal(1);
     });
   });
 
@@ -205,7 +226,7 @@ describe("HiddenSocial", function () {
 
     it("Should return correct recipient info", async function () {
       const recipientInfo = await contract.getRecipientInfo();
-      expect(recipientInfo[0]).to.equal(1); // currentRecipientIndex
+      expect(recipientInfo[0]).to.equal(0); // currentRecipientIndex
       expect(recipientInfo[1]).to.equal(1); // totalRecipients
     });
 
@@ -232,15 +253,45 @@ describe("HiddenSocial", function () {
     });
   });
 
-  describe("Constants", function () {
-    it("Should have correct withdrawal amount", async function () {
-      const withdrawalAmount = await contract.WITHDRAWAL_AMOUNT();
-      expect(withdrawalAmount).to.equal(ethers.parseEther("0.01"));
+  describe("Withdrawal Request Management", function () {
+    beforeEach(async function () {
+      // Set up multiple X accounts for testing
+      const accounts = ["@user1", "@user2", "@user3"];
+      const signers = [user1, user2, user3];
+      
+      for (let i = 0; i < accounts.length; i++) {
+        const input = fhevm.createEncryptedInput(contractAddress, signers[i].address);
+        input.addAddress(signers[i].address);
+        const encryptedInput = await input.encrypt();
+
+        await contract.connect(signers[i]).bindXAccount(
+          accounts[i],
+          encryptedInput.handles[0],
+          encryptedInput.inputProof
+        );
+
+        // Send funds to each account
+        const sendAmount = ethers.parseEther("0.1");
+        await contract.connect(owner).sendToXAccount(accounts[i], { value: sendAmount });
+      }
     });
 
-    it("Should have correct batch withdrawal count", async function () {
-      const batchCount = await contract.BATCH_WITHDRAWAL_COUNT();
-      expect(batchCount).to.equal(10);
+    it("Should handle multiple withdrawal requests", async function () {
+      // Request withdrawals for multiple accounts
+      await contract.connect(user1).requestWithdrawal("@user1");
+      await contract.connect(user2).requestWithdrawal("@user2");
+      await contract.connect(user3).requestWithdrawal("@user3");
+
+      // Check total withdrawal requests
+      const totalRequests = await contract.getTotalWithdrawalRequests();
+      expect(totalRequests).to.equal(3);
+
+      // Verify each request
+      for (let i = 1; i <= 3; i++) {
+        const request = await contract.getWithdrawalRequest(i);
+        expect(request.xAccountId).to.equal(`@user${i}`);
+        expect(request.isProcessed).to.be.false;
+      }
     });
   });
 
@@ -269,13 +320,13 @@ describe("HiddenSocial", function () {
       const totalBalance = await contract.getContractBalance();
       expect(totalBalance).to.equal(amount1 + amount2);
 
-      // Should still only count as 2 recipients (same account funded twice)
+      // Should count as 2 recipients (same account funded twice)
       const recipientInfo = await contract.getRecipientInfo();
       expect(recipientInfo[1]).to.equal(2); // totalRecipients
     });
 
-    it("Should handle recipient array wraparound", async function () {
-      // Fund 15 accounts (more than batch size of 10)
+    it("Should handle multiple recipient accounts", async function () {
+      // Fund 15 accounts
       for (let i = 0; i < 15; i++) {
         const xAccountId = `@testuser${i}`;
         
@@ -294,7 +345,7 @@ describe("HiddenSocial", function () {
       }
 
       const recipientInfo = await contract.getRecipientInfo();
-      expect(recipientInfo[0]).to.equal(5); // currentRecipientIndex should wrap around
+      expect(recipientInfo[0]).to.equal(0); // currentRecipientIndex (not used in new implementation)
       expect(recipientInfo[1]).to.equal(15); // totalRecipients
     });
   });
