@@ -55,12 +55,29 @@ export function BindXAccount() {
         HIDDEN_SOCIAL_ADDRESS
       )
 
+       let formattedHandle: string;
+        if (typeof handle === 'string') {
+          formattedHandle = handle.startsWith('0x') ? handle : `0x${handle}`;
+        } else if (handle instanceof Uint8Array) {
+          formattedHandle = `0x${Array.from(handle).map(b => b.toString(16).padStart(2, '0')).join('')}`;
+        } else {
+          formattedHandle = `0x${handle.toString()}`;
+        }
+
+      let formattedProof: string;
+        if (typeof proof === 'string') {
+          formattedProof = proof.startsWith('0x') ? proof : `0x${proof}`;
+        } else if (proof instanceof Uint8Array) {
+          formattedProof = `0x${Array.from(proof).map(b => b.toString(16).padStart(2, '0')).join('')}`;
+        } else {
+          formattedProof = `0x${proof.toString()}`;
+        }
       // 调用合约绑定方法
       const hash = await walletClient.writeContract({
         address: HIDDEN_SOCIAL_ADDRESS as `0x${string}`,
         abi: HIDDEN_SOCIAL_ABI,
         functionName: 'bindXAccount',
-        args: [xAccountId, handle, proof],
+        args: [xAccountId, formattedHandle, formattedProof],
       })
 
       setMessage(`绑定交易已提交: ${hash}`)

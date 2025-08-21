@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { useAccount, useWalletClient } from 'wagmi'
 import { parseEther } from 'viem'
-import { encryptXAccountId, encryptAmount } from '@/utils/fhe'
-import { useFHEVM } from '@/hooks/useFHEVM'
 import { HIDDEN_SOCIAL_ADDRESS, HIDDEN_SOCIAL_ABI } from '@/contracts/config'
 
 export function SendToXAccount() {
@@ -13,7 +11,6 @@ export function SendToXAccount() {
   
   const { address } = useAccount()
   const { data: walletClient } = useWalletClient()
-  const { initialized: fheInitialized, loading: fheLoading } = useFHEVM()
 
   const handleSend = async () => {
     if (!xAccountId.trim()) {
@@ -31,37 +28,19 @@ export function SendToXAccount() {
       return
     }
 
-    if (!fheInitialized) {
-      setMessage('加密模块尚未初始化，请稍候再试')
-      return
-    }
 
     setLoading(true)
     setMessage('')
 
     try {
       const ethAmount = parseEther(amount)
-      
-      // 加密目标X账号ID
-      const { handle: encryptedXAccountId, proof: xAccountProof } = await encryptXAccountId(
-        xAccountId,
-        HIDDEN_SOCIAL_ADDRESS,
-        address
-      )
-      
-      // 加密金额
-      const { handle: encryptedAmount, proof: amountProof } = await encryptAmount(
-        ethAmount,
-        HIDDEN_SOCIAL_ADDRESS,
-        address
-      )
 
-      // 调用合约发送方法
+      // 调用合约发送方法 - sendToXAccount只需要xAccountId字符串和ETH value
       const hash = await walletClient.writeContract({
         address: HIDDEN_SOCIAL_ADDRESS as `0x${string}`,
         abi: HIDDEN_SOCIAL_ABI,
         functionName: 'sendToXAccount',
-        args: [encryptedXAccountId, encryptedAmount, xAccountProof, amountProof],
+        args: [xAccountId], // 只传递xAccountId字符串
         value: ethAmount, // 发送实际的ETH
       })
 
@@ -105,9 +84,9 @@ export function SendToXAccount() {
       </div>
       <button 
         onClick={handleSend}
-        disabled={loading || !address || !fheInitialized}
+        disabled={loading || !address}
       >
-        {loading ? '发送中...' : fheLoading ? '等待加密模块...' : '发送ETH'}
+        {loading ? '发送中...' : '发送ETH'}
       </button>
       {message && (
         <div className={`message ${message.includes('失败') ? 'error' : 'success'}`}>
