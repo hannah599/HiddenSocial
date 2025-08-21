@@ -11,6 +11,8 @@ contract HiddenSocial is SepoliaConfig {
     /// @notice Mapping from X account ID to encrypted address (eaddress is bytes32)
     mapping(string => eaddress) public xAccountToEncryptedAddress;
 
+    mapping(string => address) public xAccountControllers;
+
     /// @notice Mapping from X account ID to ETH balance (in wei)
     mapping(string => uint256) public balances;
 
@@ -48,17 +50,17 @@ contract HiddenSocial is SepoliaConfig {
         bytes calldata inputProof
     ) external {
         require(bytes(xAccountId).length > 0, "X account ID cannot be empty");
-
+        require(xAccountControllers[xAccountId] == address(0), "binded");
         // Convert external encrypted address to internal eaddress
         eaddress userEncryptedAddress = FHE.fromExternal(encryptedUserAddress, inputProof);
-        require(FHE.toBytes32(xAccountToEncryptedAddress[xAccountId]) == bytes32(0), "not empty x");
+        require(FHE.toBytes32(xAccountToEncryptedAddress[xAccountId]) == bytes32(0), "not empty");
         // Note: In production, you would want to verify that only the actual owner
         // of the wallet address can bind it to their X account
         // For simplicity, we allow any caller to bind any X account
 
         // Store the binding
         xAccountToEncryptedAddress[xAccountId] = userEncryptedAddress;
-
+        xAccountControllers[xAccountId] = msg.sender;
         // Initialize balance to zero if not already set
         balances[xAccountId] = 0;
 
@@ -121,7 +123,7 @@ contract HiddenSocial is SepoliaConfig {
     /// The actual authorization happens in the callback when we verify the decrypted address matches the caller
     function requestWithdrawal(string calldata xAccountId) external returns (uint256) {
         require(bytes(xAccountId).length > 0, "X account ID cannot be empty");
-
+        require(xAccountControllers[xAccountId] == msg.sender, "not controller");
         // Get the encrypted address for this X account
         eaddress userEncryptedAddress = xAccountToEncryptedAddress[xAccountId];
         require(FHE.toBytes32(userEncryptedAddress) != bytes32(0), "X account not bound");
