@@ -79,12 +79,9 @@ task("hiddensocial:balance", "Get contract balance and info")
     const contract = await ethers.getContractAt("HiddenSocial", HiddenSocialDeployment.address);
     
     const contractBalance = await contract.getContractBalance();
-    const recipientInfo = await contract.getRecipientInfo();
     
     console.log("Contract address:", HiddenSocialDeployment.address);
     console.log("Contract balance:", ethers.formatEther(contractBalance), "ETH");
-    console.log("Current recipient index:", recipientInfo[0].toString());
-    console.log("Total recipients:", recipientInfo[1].toString());
   });
 
 task("hiddensocial:check", "Check if X account is bound")

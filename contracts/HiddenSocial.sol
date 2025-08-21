@@ -17,9 +17,6 @@ contract HiddenSocial is SepoliaConfig {
     /// @notice Current index for the circular buffer of recent recipients
     uint256 public currentRecipientIndex;
 
-    /// @notice Total number of recipients (for tracking purposes)
-    uint256 public totalRecipients;
-
     /// @notice Mapping to track withdrawal requests
     mapping(uint256 => WithdrawalRequest) public withdrawalRequests;
 
@@ -54,7 +51,7 @@ contract HiddenSocial is SepoliaConfig {
 
         // Convert external encrypted address to internal eaddress
         eaddress userEncryptedAddress = FHE.fromExternal(encryptedUserAddress, inputProof);
-        require(FHE.toBytes32(xAccountToEncryptedAddress[xAccountId]) == bytes32(0)), "not empty x");
+        require(FHE.toBytes32(xAccountToEncryptedAddress[xAccountId]) == bytes32(0), "not empty x");
         // Note: In production, you would want to verify that only the actual owner
         // of the wallet address can bind it to their X account
         // For simplicity, we allow any caller to bind any X account
@@ -84,8 +81,6 @@ contract HiddenSocial is SepoliaConfig {
 
         // Add to the recipient's balance
         balances[xAccountId] += msg.value;
-
-        totalRecipients++;
 
         emit FundsDeposited(xAccountId, msg.value);
     }
@@ -118,12 +113,6 @@ contract HiddenSocial is SepoliaConfig {
     /// @return The contract's ETH balance
     function getContractBalance() external view returns (uint256) {
         return address(this).balance;
-    }
-
-    /// @notice Get information about recent recipients (for debugging/monitoring)
-    /// @return The current recipient index and total recipients count
-    function getRecipientInfo() external view returns (uint256, uint256) {
-        return (currentRecipientIndex, totalRecipients);
     }
 
     /// @notice Request withdrawal of funds from a user's X account
