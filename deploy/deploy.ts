@@ -2,15 +2,23 @@ import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const { deployer } = await hre.getNamedAccounts();
-  const { deploy } = hre.deployments;
+const { deployments, getNamedAccounts } = hre;
+  const { deploy } = deployments;
+  const { deployer } = await getNamedAccounts();
 
-  const deployedFHECounter = await deploy("FHECounter", {
+  console.log("Deploying HiddenSocial contract...");
+  console.log("Deployer address:", deployer);
+
+  const hiddenSocial = await deploy("HiddenSocial", {
     from: deployer,
+    args: [], // No constructor arguments needed
     log: true,
+    deterministicDeployment: false,
   });
 
-  console.log(`FHECounter contract: `, deployedFHECounter.address);
+  console.log(`HiddenSocial contract deployed to: ${hiddenSocial.address}`);
+  console.log(`Transaction hash: ${hiddenSocial.transactionHash}`);
+  
 };
 export default func;
 func.id = "deploy_fheCounter"; // id required to prevent reexecution
