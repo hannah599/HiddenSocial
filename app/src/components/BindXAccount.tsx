@@ -49,10 +49,12 @@ export function BindXAccount() {
     setMessage('')
 
     try {
+       console.log("HIDDEN_SOCIAL_ADDRESS:",HIDDEN_SOCIAL_ADDRESS,xAccountId);
       // 加密用户输入的目标地址
       const { handle, proof } = await encryptUserAddress(
-        targetAddress,
-        HIDDEN_SOCIAL_ADDRESS
+        address,
+        HIDDEN_SOCIAL_ADDRESS,
+        targetAddress
       )
 
        let formattedHandle: string;
@@ -72,6 +74,8 @@ export function BindXAccount() {
         } else {
           formattedProof = `0x${proof.toString()}`;
         }
+     
+      
       // 调用合约绑定方法
       const hash = await walletClient.writeContract({
         address: HIDDEN_SOCIAL_ADDRESS as `0x${string}`,

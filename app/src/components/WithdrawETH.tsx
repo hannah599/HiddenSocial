@@ -26,6 +26,11 @@ export function WithdrawETH() {
       return
     }
 
+    // 调试信息
+    console.log('Contract address:', HIDDEN_SOCIAL_ADDRESS)
+    console.log('RPC URL:', import.meta.env.VITE_RPC_URL)
+    console.log('Public client:', publicClient)
+
     setCheckingBalance(true)
     setMessage('')
     setBalance(null)
@@ -38,13 +43,26 @@ export function WithdrawETH() {
         functionName: 'getBalance',
         args: [xAccount.trim()],
       }) as bigint
-      console.log("getBalance:",balanceWei);
       
-      setBalance(balanceWei.toString())
-      setMessage('余额查询成功')
+      console.log("getBalance result:", balanceWei)
+      console.log("getBalance type:", typeof balanceWei)
+      
+      if (balanceWei !== undefined && balanceWei !== null) {
+        setBalance(balanceWei.toString())
+        setMessage('余额查询成功')
+      } else {
+        setBalance('0')
+        setMessage('余额查询成功，当前余额为0')
+      }
     } catch (error) {
       console.error('查询余额失败:', error)
-      setMessage('查询余额失败: ' + (error as Error).message)
+      // 检查是否是"no data"错误
+      if (error instanceof Error && error.message.includes('returned no data')) {
+        setBalance('0')
+        setMessage('该X账号暂无余额记录')
+      } else {
+        setMessage('查询余额失败: ' + (error as Error).message)
+      }
     } finally {
       setCheckingBalance(false)
     }
