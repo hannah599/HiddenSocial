@@ -43,19 +43,16 @@ export function getFHEVMInstance() {
 }
 
 /**
- * 加密X账号ID
+ * 加密用户地址用于绑定X账号
  */
-export async function encryptXAccountId(xAccountId: string, contractAddress: string, userAddress: string) {
+export async function encryptUserAddress(userAddress: string, contractAddress: string) {
   const instance = getFHEVMInstance()
   
   // 创建加密输入缓冲区
   const buffer = instance.createEncryptedInput(contractAddress, userAddress)
   
-  // 将X账号ID转换为数字（可以使用哈希或其他方法）
-  const xAccountIdNumber = BigInt(hashString(xAccountId))
-  
-  // 添加到缓冲区
-  buffer.add64(xAccountIdNumber)
+  // 添加地址到缓冲区
+  buffer.addAddress(userAddress)
   
   // 加密
   const encryptedInput = await buffer.encrypt()

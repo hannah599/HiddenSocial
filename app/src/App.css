@@ -314,6 +314,53 @@ button:disabled {
   margin-top: 20px;
 }
 
+/* 钱包信息显示 */
+.wallet-info {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: #f0f8ff;
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+}
+
+.wallet-info p {
+  margin-bottom: 8px;
+}
+
+.wallet-info strong {
+  color: #4a5568;
+}
+
+.wallet-info small {
+  color: #718096;
+}
+
+/* 信息说明部分 */
+.info-section {
+  margin-bottom: 30px;
+  padding: 20px;
+  background: #f8f9ff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.info-section p {
+  margin-bottom: 12px;
+  color: #4a5568;
+  font-weight: 600;
+}
+
+.info-section ul {
+  margin-left: 20px;
+  margin-bottom: 20px;
+}
+
+.info-section li {
+  margin-bottom: 8px;
+  color: #666;
+  line-height: 1.5;
+}
+
 /* 底部 */
 .app-footer {
   margin-top: 40px;
