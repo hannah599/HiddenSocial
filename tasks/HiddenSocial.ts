@@ -7,7 +7,7 @@ task("hiddensocial:bind", "Bind X account to encrypted address")
   .setAction(async function (taskArguments: TaskArguments, hre) {
     const { fhevm, ethers, deployments } = hre;
     const [signer] = await ethers.getSigners();
-    
+    await fhevm.initializeCLIApi()
     const HiddenSocialDeployment = await deployments.get("HiddenSocial");
     const contract = await ethers.getContractAt("HiddenSocial", HiddenSocialDeployment.address);
     
