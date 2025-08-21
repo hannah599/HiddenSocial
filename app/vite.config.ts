@@ -16,13 +16,18 @@ export default defineConfig({
   },
   define: {
     global: 'globalThis',
+    'process.env': {},
   },
   server: {
     port: 3000,
+    host: true,
   },
   build: {
     outDir: 'dist',
     target: 'esnext',
+    rollupOptions: {
+      external: [],
+    },
   },
   optimizeDeps: {
     include: ['buffer', 'crypto-browserify', 'stream-browserify', 'path-browserify'],
