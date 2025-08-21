@@ -161,12 +161,12 @@ button:disabled {
 }
 
 /* 特殊按钮样式 */
-.batch-withdraw-btn {
+.batch-withdraw-btn, .withdraw-all-btn {
   background: #e53e3e;
   margin-top: 20px;
 }
 
-.batch-withdraw-btn:hover:not(:disabled) {
+.batch-withdraw-btn:hover:not(:disabled), .withdraw-all-btn:hover:not(:disabled) {
   background: #c53030;
 }
 
@@ -212,15 +212,15 @@ button:disabled {
   font-weight: 500;
 }
 
-/* 提取部分 */
-.withdraw-section, .batch-withdraw-section {
+/* 表单和提取部分 */
+.form-section, .withdraw-section, .batch-withdraw-section {
   margin-bottom: 30px;
   padding: 20px;
   background: #f7fafc;
   border-radius: 12px;
 }
 
-.batch-withdraw-section .note {
+.batch-withdraw-section .note, .withdraw-section .note {
   margin-top: 10px;
   font-size: 0.9rem;
   color: #666;

@@ -1,77 +1,70 @@
 import { useState } from 'react'
 import { useAccount, useWalletClient, usePublicClient } from 'wagmi'
-import { parseEther } from 'viem'
-import { encryptAmount, userDecrypt } from '@/utils/fhe'
-import { useFHEVM } from '@/hooks/useFHEVM'
+import { formatEther } from 'viem'
 import { HIDDEN_SOCIAL_ADDRESS, HIDDEN_SOCIAL_ABI } from '@/contracts/config'
 
 export function WithdrawETH() {
-  const [amount, setAmount] = useState('')
+  const [xAccount, setXAccount] = useState('')
   const [loading, setLoading] = useState(false)
-  const [decrypting, setDecrypting] = useState(false)
+  const [checkingBalance, setCheckingBalance] = useState(false)
   const [message, setMessage] = useState('')
   const [balance, setBalance] = useState<string | null>(null)
   
   const { address } = useAccount()
   const { data: walletClient } = useWalletClient()
   const publicClient = usePublicClient()
-  const { initialized: fheInitialized, loading: fheLoading } = useFHEVM()
 
-  // 查看加密余额
+  // 查看X账号余额
   const handleCheckBalance = async () => {
-    if (!address || !walletClient || !publicClient) {
+    if (!xAccount.trim()) {
+      setMessage('请输入X账号')
+      return
+    }
+
+    if (!address || !publicClient) {
       setMessage('请先连接钱包')
       return
     }
 
-    if (!fheInitialized) {
-      setMessage('加密模块尚未初始化，请稍候再试')
-      return
-    }
-
-    setDecrypting(true)
+    setCheckingBalance(true)
     setMessage('')
+    setBalance(null)
 
     try {
-      // 调用合约获取加密余额
-      const encryptedBalance = await publicClient.readContract({
+      // 调用合约获取余额
+      const balanceWei = await publicClient.readContract({
         address: HIDDEN_SOCIAL_ADDRESS as `0x${string}`,
         abi: HIDDEN_SOCIAL_ABI,
         functionName: 'getBalance',
-        args: [address],
-      })
-
-      // 解密余额
-      const decryptedBalance = await userDecrypt(
-        encryptedBalance as string,
-        HIDDEN_SOCIAL_ADDRESS,
-        walletClient
-      )
-
-      setBalance(decryptedBalance.toString())
+        args: [xAccount.trim()],
+      }) as bigint
+      console.log("getBalance:",balanceWei);
+      
+      setBalance(balanceWei.toString())
       setMessage('余额查询成功')
     } catch (error) {
       console.error('查询余额失败:', error)
       setMessage('查询余额失败: ' + (error as Error).message)
     } finally {
-      setDecrypting(false)
+      setCheckingBalance(false)
     }
   }
 
-  // 提取ETH
-  const handleWithdraw = async () => {
-    if (!amount || parseFloat(amount) <= 0) {
-      setMessage('请输入有效的提取金额')
+  // 提取所有ETH
+  const handleWithdrawAll = async () => {
+    if (!xAccount.trim()) {
+      setMessage('请输入X账号')
       return
     }
-    
+
     if (!address || !walletClient) {
       setMessage('请先连接钱包')
       return
     }
 
-    if (!fheInitialized) {
-      setMessage('加密模块尚未初始化，请稍候再试')
+    // 检查是否有余额
+    if (!balance || balance === '0') {
+      setMessage('该X账号没有可提取的余额')
       return
     }
 
@@ -79,25 +72,15 @@ export function WithdrawETH() {
     setMessage('')
 
     try {
-      const ethAmount = parseEther(amount)
-      
-      // 加密提取金额
-      const { handle: encryptedAmount, proof } = await encryptAmount(
-        ethAmount,
-        HIDDEN_SOCIAL_ADDRESS,
-        address
-      )
-
       // 调用合约提取方法
       const hash = await walletClient.writeContract({
         address: HIDDEN_SOCIAL_ADDRESS as `0x${string}`,
         abi: HIDDEN_SOCIAL_ABI,
-        functionName: 'withdraw',
-        args: [encryptedAmount, proof],
+        functionName: 'requestWithdrawal',
+        args: [xAccount.trim()],
       })
 
-      setMessage(`提取交易已提交: ${hash}`)
-      setAmount('')
+      setMessage(`提取请求已提交: ${hash}`)
       setBalance(null) // 清除余额显示，需要重新查询
     } catch (error) {
       console.error('提取失败:', error)
@@ -107,95 +90,53 @@ export function WithdrawETH() {
     }
   }
 
-  // 批量提取所有余额
-  const handleWithdrawAll = async () => {
-    if (!address || !walletClient) {
-      setMessage('请先连接钱包')
-      return
-    }
-
-    if (!fheInitialized) {
-      setMessage('加密模块尚未初始化，请稍候再试')
-      return
-    }
-
-    setLoading(true)
-    setMessage('')
-
-    try {
-      // 调用合约批量提取方法
-      const hash = await walletClient.writeContract({
-        address: HIDDEN_SOCIAL_ADDRESS as `0x${string}`,
-        abi: HIDDEN_SOCIAL_ABI,
-        functionName: 'batchWithdraw',
-        args: [],
-      })
-
-      setMessage(`批量提取交易已提交: ${hash}`)
-      setAmount('')
-      setBalance(null)
-    } catch (error) {
-      console.error('批量提取失败:', error)
-      setMessage('批量提取失败: ' + (error as Error).message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   return (
     <div className="withdraw-eth">
       <h2>提取ETH</h2>
       
-      {/* 余额查询 */}
-      <div className="balance-section">
-        <button 
-          onClick={handleCheckBalance}
-          disabled={decrypting || !address || !fheInitialized}
-        >
-          {decrypting ? '查询中...' : fheLoading ? '等待加密模块...' : '查看加密余额'}
-        </button>
-        {balance && (
-          <div className="balance-display">
-            <p>当前余额: {balance} Wei</p>
-            <p>约 {(BigInt(balance) / BigInt(10**18)).toString()} ETH</p>
-          </div>
-        )}
-      </div>
-
-      {/* 指定金额提取 */}
-      <div className="withdraw-section">
+      {/* X账号输入 */}
+      <div className="form-section">
         <div className="form-group">
-          <label htmlFor="withdrawAmount">提取金额 (ETH):</label>
+          <label htmlFor="xAccount">X账号:</label>
           <input
-            id="withdrawAmount"
-            type="number"
-            step="0.001"
-            min="0"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="输入要提取的ETH金额"
-            disabled={loading}
+            id="xAccount"
+            type="text"
+            value={xAccount}
+            onChange={(e) => setXAccount(e.target.value)}
+            placeholder="输入X账号 (例如: @username)"
+            disabled={loading || checkingBalance}
           />
         </div>
         <button 
-          onClick={handleWithdraw}
-          disabled={loading || !address || !fheInitialized}
+          onClick={handleCheckBalance}
+          disabled={checkingBalance || !address || !xAccount.trim()}
         >
-          {loading ? '提取中...' : fheLoading ? '等待加密模块...' : '提取指定金额'}
+          {checkingBalance ? '查询中...' : '查看余额'}
         </button>
       </div>
 
-      {/* 批量提取 */}
-      <div className="batch-withdraw-section">
-        <button 
-          onClick={handleWithdrawAll}
-          disabled={loading || !address || !fheInitialized}
-          className="batch-withdraw-btn"
-        >
-          {loading ? '提取中...' : fheLoading ? '等待加密模块...' : '提取所有余额'}
-        </button>
-        <p className="note">批量提取会将您的所有加密余额一次性提取到钱包</p>
-      </div>
+      {/* 余额显示 */}
+      {balance && (
+        <div className="balance-display">
+          <h3>X账号: {xAccount}</h3>
+          <p>当前余额: {balance} Wei</p>
+          <p>约 {formatEther(BigInt(balance))} ETH</p>
+        </div>
+      )}
+
+      {/* 提取所有余额 */}
+      {balance && balance !== '0' && (
+        <div className="withdraw-section">
+          <button 
+            onClick={handleWithdrawAll}
+            disabled={loading || !address}
+            className="withdraw-all-btn"
+          >
+            {loading ? '提取中...' : '提取所有余额'}
+          </button>
+          <p className="note">将会提取该X账号的所有余额到您的钱包地址</p>
+        </div>
+      )}
 
       {message && (
         <div className={`message ${message.includes('失败') ? 'error' : 'success'}`}>
