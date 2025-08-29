@@ -186,13 +186,13 @@ export function WithdrawETH() {
                 </span>
               </div>
               <div className="balance-row">
-                <span className="balance-label">Wei:</span>
-                <span className="balance-value wei-amount">{balance} Wei</span>
+                <span className="balance-label">Bound Address:</span>
+                <span className="balance-value wei-amount">******</span>
               </div>
               <div className="balance-row">
                 <span className="balance-label">USD Value:</span>
                 <span className="balance-value usd-amount">
-                  ≈ ${(parseFloat(formatEther(BigInt(balance))) * 2000).toFixed(2)} USD
+                  ≈ ${(parseFloat(formatEther(BigInt(balance))) * 4351).toFixed(2)} USD
                 </span>
               </div>
             </div>
