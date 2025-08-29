@@ -97,54 +97,92 @@ export function BindXAccount() {
 
   return (
     <div className="bind-x-account">
-      <h2>绑定X账号</h2>
+      <div className="feature-header">
+        <div className="feature-icon">🔗</div>
+        <div className="feature-title">
+          <h2>绑定X账号</h2>
+          <p>Link your X account to a secure encrypted address</p>
+        </div>
+      </div>
       
       <div className="info-section">
-        <p><strong>功能说明:</strong></p>
+        <div className="info-header">
+          <span className="info-icon">💡</span>
+          <strong>功能说明</strong>
+        </div>
         <ul>
           <li>将你的X账号ID绑定到一个以太坊地址</li>
           <li>该地址将被加密存储，只有拥有该地址私钥的人才能提取资金</li>
           <li>其他人可以向你的X账号发送ETH，但只有你能提取</li>
         </ul>
       </div>
-      
-      <div className="form-group">
-        <label htmlFor="xAccountId">X账号ID:</label>
-        <input
-          id="xAccountId"
-          type="text"
-          value={xAccountId}
-          onChange={(e) => setXAccountId(e.target.value)}
-          placeholder="输入你的X账号ID (例如: @username)"
-          disabled={loading}
-        />
-      </div>
 
-      <div className="form-group">
-        <label htmlFor="targetAddress">要绑定的地址:</label>
-        <input
-          id="targetAddress"
-          type="text"
-          value={targetAddress}
-          onChange={(e) => setTargetAddress(e.target.value)}
-          placeholder="输入要绑定的以太坊地址 (0x...)"
-          disabled={loading}
-        />
-        <small style={{ color: '#718096', marginTop: '4px', display: 'block' }}>
-          绑定到用户真实地址，这个地址是加密的，其他人无法获取
-        </small>
-      </div>
+      <div className="form-section">
+        <div className="form-group">
+          <label htmlFor="xAccountId">
+            <span className="label-icon">🐦</span>
+            X账号ID
+          </label>
+          <div className="input-container">
+            <input
+              id="xAccountId"
+              type="text"
+              value={xAccountId}
+              onChange={(e) => setXAccountId(e.target.value)}
+              placeholder="输入你的X账号ID (例如: @username)"
+              disabled={loading}
+              className="modern-input"
+            />
+            <div className="input-glow"></div>
+          </div>
+        </div>
 
-      <button 
-        onClick={handleBind}
-        disabled={loading || !address || !fheInitialized || !targetAddress || !xAccountId}
-      >
-        {loading ? '绑定中...' : fheLoading ? '等待加密模块...' : '绑定X账号'}
-      </button>
+        <div className="form-group">
+          <label htmlFor="targetAddress">
+            <span className="label-icon">📍</span>
+            要绑定的地址
+          </label>
+          <div className="input-container">
+            <input
+              id="targetAddress"
+              type="text"
+              value={targetAddress}
+              onChange={(e) => setTargetAddress(e.target.value)}
+              placeholder="输入要绑定的以太坊地址 (0x...)"
+              disabled={loading}
+              className="modern-input"
+            />
+            <div className="input-glow"></div>
+          </div>
+          <div className="input-hint">
+            <span className="hint-icon">🔐</span>
+            绑定到用户真实地址，这个地址是加密的，其他人无法获取
+          </div>
+        </div>
+
+        <button 
+          className="action-button bind-button"
+          onClick={handleBind}
+          disabled={loading || !address || !fheInitialized || !targetAddress || !xAccountId}
+        >
+          <span className="button-icon">
+            {loading ? '⏳' : fheLoading ? '⏱️' : '🔗'}
+          </span>
+          <span className="button-text">
+            {loading ? '绑定中...' : fheLoading ? '等待加密模块...' : '绑定X账号'}
+          </span>
+          <div className="button-shimmer"></div>
+        </button>
+      </div>
       
       {message && (
         <div className={`message ${message.includes('失败') || message.includes('请输入') ? 'error' : 'success'}`}>
-          {message}
+          <div className="message-icon">
+            {message.includes('失败') || message.includes('请输入') ? '❌' : '✅'}
+          </div>
+          <div className="message-content">
+            {message}
+          </div>
         </div>
       )}
     </div>

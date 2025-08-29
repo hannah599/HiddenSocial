@@ -22,33 +22,49 @@ function AppContent() {
   return (
     <div className="app">
       <header className="app-header">
-        <h1>🕵️ Hidden Social</h1>
-        <p>基于同态加密的匿名社交支付平台</p>
-        
-        {/* FHE 状态指示器 */}
-        <div className="fhe-status">
-          {loading && (
-            <div className="status-indicator loading">
-              <span className="spinner">⏳</span>
-              <span>正在初始化加密模块...</span>
+        <div className="header-content">
+          <div className="logo-section">
+            <h1>⚡ Hidden Social</h1>
+            <p>基于同态加密的匿名社交支付平台</p>
+          </div>
+          
+          <div className="header-middle">
+            {/* FHE 状态指示器 */}
+            <div className="fhe-status">
+              {loading && (
+                <div className="status-indicator loading">
+                  <div className="status-icon">
+                    <div className="loading-ring"></div>
+                  </div>
+                  <div className="status-text">
+                    <strong>加密模块初始化中</strong>
+                  </div>
+                </div>
+              )}
+              {error && (
+                <div className="status-indicator error">
+                  <div className="status-icon">🚨</div>
+                  <div className="status-text">
+                    <strong>加密模块失败</strong>
+                  </div>
+                  <button onClick={() => window.location.reload()} className="retry-btn">重试</button>
+                </div>
+              )}
+              {initialized && (
+                <div className="status-indicator success">
+                  <div className="status-icon">🔐</div>
+                  <div className="status-text">
+                    <strong>加密模块就绪</strong>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
-          {error && (
-            <div className="status-indicator error">
-              <span>❌</span>
-              <span>加密模块初始化失败: {error.message}</span>
-              <button onClick={() => window.location.reload()} className="retry-btn">重试</button>
-            </div>
-          )}
-          {initialized && (
-            <div className="status-indicator success">
-              <span>✅</span>
-              <span>加密模块已就绪</span>
-            </div>
-          )}
+          </div>
+          
+          <div className="header-right">
+            <WalletConnect />
+          </div>
         </div>
-        
-        <WalletConnect />
       </header>
 
       <main className="app-main">
@@ -57,19 +73,31 @@ function AppContent() {
             className={activeTab === 'bind' ? 'active' : ''} 
             onClick={() => setActiveTab('bind')}
           >
-            绑定 X 账号
+            <span className="tab-icon">🔗</span>
+            <div className="tab-text">
+              <strong>绑定账号</strong>
+              <small>Link X Account</small>
+            </div>
           </button>
           <button 
             className={activeTab === 'send' ? 'active' : ''} 
             onClick={() => setActiveTab('send')}
           >
-            发送 ETH
+            <span className="tab-icon">💸</span>
+            <div className="tab-text">
+              <strong>发送资产</strong>
+              <small>Send ETH</small>
+            </div>
           </button>
           <button 
             className={activeTab === 'withdraw' ? 'active' : ''} 
             onClick={() => setActiveTab('withdraw')}
           >
-            提取 ETH
+            <span className="tab-icon">💰</span>
+            <div className="tab-text">
+              <strong>提取资产</strong>
+              <small>Withdraw ETH</small>
+            </div>
           </button>
         </nav>
 

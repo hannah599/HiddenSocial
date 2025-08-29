@@ -57,40 +57,102 @@ export function SendToXAccount() {
 
   return (
     <div className="send-to-x-account">
-      <h2>向X账号发送ETH</h2>
-      <div className="form-group">
-        <label htmlFor="targetXAccountId">目标X账号ID:</label>
-        <input
-          id="targetXAccountId"
-          type="text"
-          value={xAccountId}
-          onChange={(e) => setXAccountId(e.target.value)}
-          placeholder="输入目标X账号ID (例如: @username)"
-          disabled={loading}
-        />
+      <div className="feature-header">
+        <div className="feature-icon">💸</div>
+        <div className="feature-title">
+          <h2>向X账号发送ETH</h2>
+          <p>Send ETH to any X account anonymously</p>
+        </div>
       </div>
-      <div className="form-group">
-        <label htmlFor="ethAmount">ETH金额:</label>
-        <input
-          id="ethAmount"
-          type="number"
-          step="0.001"
-          min="0"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="输入要发送的ETH金额"
-          disabled={loading}
-        />
+      
+      <div className="info-section">
+        <div className="info-header">
+          <span className="info-icon">💡</span>
+          <strong>发送说明</strong>
+        </div>
+        <ul>
+          <li>向任何已绑定的X账号发送ETH</li>
+          <li>接收者的真实地址保持加密隐私</li>
+          <li>只有接收者本人能提取发送给他的资金</li>
+        </ul>
       </div>
-      <button 
-        onClick={handleSend}
-        disabled={loading || !address}
-      >
-        {loading ? '发送中...' : '发送ETH'}
-      </button>
+
+      <div className="form-section">
+        <div className="form-group">
+          <label htmlFor="targetXAccountId">
+            <span className="label-icon">🎯</span>
+            目标X账号ID
+          </label>
+          <div className="input-container">
+            <input
+              id="targetXAccountId"
+              type="text"
+              value={xAccountId}
+              onChange={(e) => setXAccountId(e.target.value)}
+              placeholder="输入目标X账号ID (例如: @username)"
+              disabled={loading}
+              className="modern-input"
+            />
+            <div className="input-glow"></div>
+          </div>
+          <div className="input-hint">
+            <span className="hint-icon">🔍</span>
+            确保输入正确的X账号ID，资金将发送到该账号绑定的加密地址
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="ethAmount">
+            <span className="label-icon">💰</span>
+            ETH金额
+          </label>
+          <div className="input-container">
+            <input
+              id="ethAmount"
+              type="number"
+              step="0.001"
+              min="0"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="输入要发送的ETH金额"
+              disabled={loading}
+              className="modern-input amount-input"
+            />
+            <div className="input-glow"></div>
+            <div className="currency-badge">ETH</div>
+          </div>
+          <div className="amount-converter">
+            {amount && !isNaN(parseFloat(amount)) && (
+              <span className="converted-amount">
+                ≈ ${(parseFloat(amount) * 2000).toFixed(2)} USD
+              </span>
+            )}
+          </div>
+        </div>
+
+        <button 
+          className="action-button send-button"
+          onClick={handleSend}
+          disabled={loading || !address || !xAccountId.trim() || !amount || parseFloat(amount) <= 0}
+        >
+          <span className="button-icon">
+            {loading ? '⏳' : '💸'}
+          </span>
+          <span className="button-text">
+            {loading ? '发送中...' : '发送ETH'}
+          </span>
+          <div className="button-shimmer"></div>
+        </button>
+      </div>
+      
       {message && (
-        <div className={`message ${message.includes('失败') ? 'error' : 'success'}`}>
-          {message}
+        <div className={`message ${message.includes('失败') || message.includes('请输入') ? 'error' : 'success'}`}>
+          <div className="message-icon">
+            {message.includes('失败') || message.includes('请输入') ? '❌' : '✅'}
+          </div>
+          <div className="message-content">
+            {message}
+          </div>
         </div>
       )}
     </div>
