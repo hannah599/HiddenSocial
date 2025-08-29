@@ -14,17 +14,17 @@ export function SendToXAccount() {
 
   const handleSend = async () => {
     if (!xAccountId.trim()) {
-      setMessage('请输入目标X账号ID')
+      setMessage('Please enter target X account ID')
       return
     }
     
     if (!amount || parseFloat(amount) <= 0) {
-      setMessage('请输入有效的ETH金额')
+      setMessage('Please enter a valid ETH amount')
       return
     }
     
     if (!address || !walletClient) {
-      setMessage('请先连接钱包')
+      setMessage('Please connect your wallet first')
       return
     }
 
@@ -44,12 +44,12 @@ export function SendToXAccount() {
         value: ethAmount, // 发送实际的ETH
       })
 
-      setMessage(`发送交易已提交: ${hash}`)
+      setMessage(`Transaction submitted: ${hash}`)
       setXAccountId('')
       setAmount('')
     } catch (error) {
-      console.error('发送失败:', error)
-      setMessage('发送失败: ' + (error as Error).message)
+      console.error('Send failed:', error)
+      setMessage('Send failed: ' + (error as Error).message)
     } finally {
       setLoading(false)
     }
@@ -60,7 +60,7 @@ export function SendToXAccount() {
       <div className="feature-header">
         <div className="feature-icon">💸</div>
         <div className="feature-title">
-          <h2>向X账号发送ETH</h2>
+          <h2>Send ETH to X Account</h2>
           <p>Send ETH to any X account anonymously</p>
         </div>
       </div>
@@ -68,12 +68,12 @@ export function SendToXAccount() {
       <div className="info-section">
         <div className="info-header">
           <span className="info-icon">💡</span>
-          <strong>发送说明</strong>
+          <strong>How to send</strong>
         </div>
         <ul>
-          <li>向任何已绑定的X账号发送ETH</li>
-          <li>接收者的真实地址保持加密隐私</li>
-          <li>只有接收者本人能提取发送给他的资金</li>
+          <li>Send ETH to any bound X account</li>
+          <li>Recipient's real address remains encrypted and private</li>
+          <li>Only the recipient can withdraw the funds sent to them</li>
         </ul>
       </div>
 
@@ -81,7 +81,7 @@ export function SendToXAccount() {
         <div className="form-group">
           <label htmlFor="targetXAccountId">
             <span className="label-icon">🎯</span>
-            目标X账号ID
+            Target X Account ID
           </label>
           <div className="input-container">
             <input
@@ -89,7 +89,7 @@ export function SendToXAccount() {
               type="text"
               value={xAccountId}
               onChange={(e) => setXAccountId(e.target.value)}
-              placeholder="输入目标X账号ID (例如: @username)"
+              placeholder="Enter target X account ID (e.g., @username)"
               disabled={loading}
               className="modern-input"
             />
@@ -97,14 +97,14 @@ export function SendToXAccount() {
           </div>
           <div className="input-hint">
             <span className="hint-icon">🔍</span>
-            确保输入正确的X账号ID，资金将发送到该账号绑定的加密地址
+            Make sure to enter the correct X account ID, funds will be sent to the encrypted address
           </div>
         </div>
 
         <div className="form-group">
           <label htmlFor="ethAmount">
             <span className="label-icon">💰</span>
-            ETH金额
+            ETH Amount
           </label>
           <div className="input-container">
             <input
@@ -114,7 +114,7 @@ export function SendToXAccount() {
               min="0"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="输入要发送的ETH金额"
+              placeholder="Enter ETH amount to send"
               disabled={loading}
               className="modern-input amount-input"
             />
@@ -139,16 +139,16 @@ export function SendToXAccount() {
             {loading ? '⏳' : '💸'}
           </span>
           <span className="button-text">
-            {loading ? '发送中...' : '发送ETH'}
+            {loading ? 'Sending...' : 'Send ETH'}
           </span>
           <div className="button-shimmer"></div>
         </button>
       </div>
       
       {message && (
-        <div className={`message ${message.includes('失败') || message.includes('请输入') ? 'error' : 'success'}`}>
+        <div className={`message ${message.includes('failed') || message.includes('Please') ? 'error' : 'success'}`}>
           <div className="message-icon">
-            {message.includes('失败') || message.includes('请输入') ? '❌' : '✅'}
+            {message.includes('failed') || message.includes('Please') ? '❌' : '✅'}
           </div>
           <div className="message-content">
             {message}

@@ -17,12 +17,12 @@ export function WithdrawETH() {
   // 查看X账号余额
   const handleCheckBalance = async () => {
     if (!xAccount.trim()) {
-      setMessage('请输入X账号')
+      setMessage('Please enter X account')
       return
     }
 
     if (!address || !publicClient) {
-      setMessage('请先连接钱包')
+      setMessage('Please connect your wallet first')
       return
     }
 
@@ -49,19 +49,19 @@ export function WithdrawETH() {
       
       if (balanceWei !== undefined && balanceWei !== null) {
         setBalance(balanceWei.toString())
-        setMessage('余额查询成功')
+        setMessage('Balance query successful')
       } else {
         setBalance('0')
-        setMessage('余额查询成功，当前余额为0')
+        setMessage('Balance query successful, current balance is 0')
       }
     } catch (error) {
-      console.error('查询余额失败:', error)
+      console.error('Balance query failed:', error)
       // 检查是否是"no data"错误
       if (error instanceof Error && error.message.includes('returned no data')) {
         setBalance('0')
-        setMessage('该X账号暂无余额记录')
+        setMessage('This X account has no balance records')
       } else {
-        setMessage('查询余额失败: ' + (error as Error).message)
+        setMessage('Balance query failed: ' + (error as Error).message)
       }
     } finally {
       setCheckingBalance(false)
@@ -71,18 +71,18 @@ export function WithdrawETH() {
   // 提取所有ETH
   const handleWithdrawAll = async () => {
     if (!xAccount.trim()) {
-      setMessage('请输入X账号')
+      setMessage('Please enter X account')
       return
     }
 
     if (!address || !walletClient) {
-      setMessage('请先连接钱包')
+      setMessage('Please connect your wallet first')
       return
     }
 
     // 检查是否有余额
     if (!balance || balance === '0') {
-      setMessage('该X账号没有可提取的余额')
+      setMessage('This X account has no withdrawable balance')
       return
     }
 
@@ -98,11 +98,11 @@ export function WithdrawETH() {
         args: [xAccount.trim()],
       })
 
-      setMessage(`提取请求已提交: ${hash}`)
+      setMessage(`Withdrawal request submitted: ${hash}`)
       setBalance(null) // 清除余额显示，需要重新查询
     } catch (error) {
-      console.error('提取失败:', error)
-      setMessage('提取失败: ' + (error as Error).message)
+      console.error('Withdrawal failed:', error)
+      setMessage('Withdrawal failed: ' + (error as Error).message)
     } finally {
       setLoading(false)
     }
@@ -113,7 +113,7 @@ export function WithdrawETH() {
       <div className="feature-header">
         <div className="feature-icon">💰</div>
         <div className="feature-title">
-          <h2>提取ETH</h2>
+          <h2>Withdraw ETH</h2>
           <p>Withdraw your encrypted funds securely</p>
         </div>
       </div>
@@ -121,12 +121,12 @@ export function WithdrawETH() {
       <div className="info-section">
         <div className="info-header">
           <span className="info-icon">💡</span>
-          <strong>提取说明</strong>
+          <strong>How to withdraw</strong>
         </div>
         <ul>
-          <li>只能提取发送给您绑定X账号的ETH</li>
-          <li>提取过程使用FHE解密确保安全性</li>
-          <li>资金将直接发送到您的钱包地址</li>
+          <li>You can only withdraw ETH sent to your bound X account</li>
+          <li>Withdrawal uses FHE decryption for security</li>
+          <li>Funds will be sent directly to your wallet address</li>
         </ul>
       </div>
       
@@ -135,7 +135,7 @@ export function WithdrawETH() {
         <div className="form-group">
           <label htmlFor="xAccount">
             <span className="label-icon">🐦</span>
-            X账号
+            X Account
           </label>
           <div className="input-container">
             <input
@@ -143,7 +143,7 @@ export function WithdrawETH() {
               type="text"
               value={xAccount}
               onChange={(e) => setXAccount(e.target.value)}
-              placeholder="输入X账号 (例如: @username)"
+              placeholder="Enter X account (e.g., @username)"
               disabled={loading || checkingBalance}
               className="modern-input"
             />
@@ -160,7 +160,7 @@ export function WithdrawETH() {
             {checkingBalance ? '⏳' : '🔍'}
           </span>
           <span className="button-text">
-            {checkingBalance ? '查询中...' : '查看余额'}
+            {checkingBalance ? 'Checking...' : 'Check Balance'}
           </span>
           <div className="button-shimmer"></div>
         </button>
@@ -171,26 +171,26 @@ export function WithdrawETH() {
         <div className="balance-section">
           <div className="balance-header">
             <span className="balance-icon">💳</span>
-            <h3>账号余额</h3>
+            <h3>Account Balance</h3>
           </div>
           <div className="balance-card">
             <div className="balance-info">
               <div className="balance-row">
-                <span className="balance-label">X账号:</span>
+                <span className="balance-label">X Account:</span>
                 <span className="balance-value account-name">{xAccount}</span>
               </div>
               <div className="balance-row">
-                <span className="balance-label">余额:</span>
+                <span className="balance-label">Balance:</span>
                 <span className="balance-value eth-amount">
                   {formatEther(BigInt(balance))} ETH
                 </span>
               </div>
               <div className="balance-row">
-                <span className="balance-label">详细:</span>
+                <span className="balance-label">Wei:</span>
                 <span className="balance-value wei-amount">{balance} Wei</span>
               </div>
               <div className="balance-row">
-                <span className="balance-label">估值:</span>
+                <span className="balance-label">USD Value:</span>
                 <span className="balance-value usd-amount">
                   ≈ ${(parseFloat(formatEther(BigInt(balance))) * 2000).toFixed(2)} USD
                 </span>
@@ -205,7 +205,7 @@ export function WithdrawETH() {
         <div className="withdraw-section">
           <div className="withdraw-header">
             <span className="withdraw-icon">🏦</span>
-            <h3>提取资金</h3>
+            <h3>Withdraw Funds</h3>
           </div>
           <button 
             onClick={handleWithdrawAll}
@@ -216,21 +216,21 @@ export function WithdrawETH() {
               {loading ? '⏳' : '💰'}
             </span>
             <span className="button-text">
-              {loading ? '提取中...' : '提取所有余额'}
+              {loading ? 'Withdrawing...' : 'Withdraw All Balance'}
             </span>
             <div className="button-shimmer"></div>
           </button>
           <div className="withdraw-note">
             <span className="note-icon">ℹ️</span>
-            将会提取该X账号的所有余额到您的钱包地址
+            All balance from this X account will be withdrawn to your wallet address
           </div>
         </div>
       )}
 
       {message && (
-        <div className={`message ${message.includes('失败') || message.includes('请输入') ? 'error' : 'success'}`}>
+        <div className={`message ${message.includes('failed') || message.includes('Please') ? 'error' : 'success'}`}>
           <div className="message-icon">
-            {message.includes('失败') || message.includes('请输入') ? '❌' : '✅'}
+            {message.includes('failed') || message.includes('Please') ? '❌' : '✅'}
           </div>
           <div className="message-content">
             {message}

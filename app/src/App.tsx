@@ -25,7 +25,7 @@ function AppContent() {
         <div className="header-content">
           <div className="logo-section">
             <h1>⚡ Hidden Social</h1>
-            <p>基于同态加密的匿名社交支付平台</p>
+            <p>Anonymous Social Payment Platform with FHE</p>
           </div>
           
           <div className="header-middle">
@@ -37,7 +37,7 @@ function AppContent() {
                     <div className="loading-ring"></div>
                   </div>
                   <div className="status-text">
-                    <strong>加密模块初始化中</strong>
+                    <strong>Initializing FHE</strong>
                   </div>
                 </div>
               )}
@@ -45,16 +45,16 @@ function AppContent() {
                 <div className="status-indicator error">
                   <div className="status-icon">🚨</div>
                   <div className="status-text">
-                    <strong>加密模块失败</strong>
+                    <strong>FHE Init Failed</strong>
                   </div>
-                  <button onClick={() => window.location.reload()} className="retry-btn">重试</button>
+                  <button onClick={() => window.location.reload()} className="retry-btn">Retry</button>
                 </div>
               )}
               {initialized && (
                 <div className="status-indicator success">
                   <div className="status-icon">🔐</div>
                   <div className="status-text">
-                    <strong>加密模块就绪</strong>
+                    <strong>FHE Ready</strong>
                   </div>
                 </div>
               )}
@@ -75,7 +75,7 @@ function AppContent() {
           >
             <span className="tab-icon">🔗</span>
             <div className="tab-text">
-              <strong>绑定账号</strong>
+              <strong>Bind Account</strong>
               <small>Link X Account</small>
             </div>
           </button>
@@ -85,7 +85,7 @@ function AppContent() {
           >
             <span className="tab-icon">💸</span>
             <div className="tab-text">
-              <strong>发送资产</strong>
+              <strong>Send Assets</strong>
               <small>Send ETH</small>
             </div>
           </button>
@@ -95,7 +95,7 @@ function AppContent() {
           >
             <span className="tab-icon">💰</span>
             <div className="tab-text">
-              <strong>提取资产</strong>
+              <strong>Withdraw Assets</strong>
               <small>Withdraw ETH</small>
             </div>
           </button>
@@ -110,12 +110,12 @@ function AppContent() {
 
       <footer className="app-footer">
         <p>
-          使用 Zama FHE 技术实现完全加密的隐私保护
+          Fully encrypted privacy protection with Zama FHE technology
         </p>
         <p>
           <small>
-            支持的网络: Sepolia 测试网 | 
-            合约地址: {import.meta.env.VITE_CONTRACT_ADDRESS || '未部署'}
+            Supported Network: Sepolia Testnet | 
+            Contract: {import.meta.env.VITE_CONTRACT_ADDRESS || 'Not deployed'}
           </small>
         </p>
       </footer>

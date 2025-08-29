@@ -21,27 +21,27 @@ export function BindXAccount() {
 
   const handleBind = async () => {
     if (!xAccountId.trim()) {
-      setMessage('请输入X账号ID')
+      setMessage('Please enter X account ID')
       return
     }
 
     if (!targetAddress.trim()) {
-      setMessage('请输入要绑定的地址')
+      setMessage('Please enter target address')
       return
     }
 
     if (!isValidAddress(targetAddress)) {
-      setMessage('请输入有效的以太坊地址格式 (0x...)')
+      setMessage('Please enter a valid Ethereum address (0x...)')
       return
     }
     
     if (!address || !walletClient) {
-      setMessage('请先连接钱包')
+      setMessage('Please connect your wallet first')
       return
     }
 
     if (!fheInitialized) {
-      setMessage('加密模块尚未初始化，请稍候再试')
+      setMessage('FHE module not initialized, please try again later')
       return
     }
 
@@ -84,12 +84,12 @@ export function BindXAccount() {
         args: [xAccountId, formattedHandle, formattedProof],
       })
 
-      setMessage(`绑定交易已提交: ${hash}`)
+      setMessage(`Binding transaction submitted: ${hash}`)
       setXAccountId('')
       setTargetAddress('')
     } catch (error) {
-      console.error('绑定失败:', error)
-      setMessage('绑定失败: ' + (error as Error).message)
+      console.error('Binding failed:', error)
+      setMessage('Binding failed: ' + (error as Error).message)
     } finally {
       setLoading(false)
     }
@@ -100,7 +100,7 @@ export function BindXAccount() {
       <div className="feature-header">
         <div className="feature-icon">🔗</div>
         <div className="feature-title">
-          <h2>绑定X账号</h2>
+          <h2>Bind X Account</h2>
           <p>Link your X account to a secure encrypted address</p>
         </div>
       </div>
@@ -108,12 +108,12 @@ export function BindXAccount() {
       <div className="info-section">
         <div className="info-header">
           <span className="info-icon">💡</span>
-          <strong>功能说明</strong>
+          <strong>How it works</strong>
         </div>
         <ul>
-          <li>将你的X账号ID绑定到一个以太坊地址</li>
-          <li>该地址将被加密存储，只有拥有该地址私钥的人才能提取资金</li>
-          <li>其他人可以向你的X账号发送ETH，但只有你能提取</li>
+          <li>Bind your X account ID to an Ethereum address</li>
+          <li>The address is encrypted and stored securely with FHE</li>
+          <li>Others can send ETH to your X account, but only you can withdraw</li>
         </ul>
       </div>
 
@@ -121,7 +121,7 @@ export function BindXAccount() {
         <div className="form-group">
           <label htmlFor="xAccountId">
             <span className="label-icon">🐦</span>
-            X账号ID
+            X Account ID
           </label>
           <div className="input-container">
             <input
@@ -129,7 +129,7 @@ export function BindXAccount() {
               type="text"
               value={xAccountId}
               onChange={(e) => setXAccountId(e.target.value)}
-              placeholder="输入你的X账号ID (例如: @username)"
+              placeholder="Enter your X account ID (e.g., @username)"
               disabled={loading}
               className="modern-input"
             />
@@ -140,7 +140,7 @@ export function BindXAccount() {
         <div className="form-group">
           <label htmlFor="targetAddress">
             <span className="label-icon">📍</span>
-            要绑定的地址
+            Target Address
           </label>
           <div className="input-container">
             <input
@@ -148,7 +148,7 @@ export function BindXAccount() {
               type="text"
               value={targetAddress}
               onChange={(e) => setTargetAddress(e.target.value)}
-              placeholder="输入要绑定的以太坊地址 (0x...)"
+              placeholder="Enter Ethereum address to bind (0x...)"
               disabled={loading}
               className="modern-input"
             />
@@ -156,7 +156,7 @@ export function BindXAccount() {
           </div>
           <div className="input-hint">
             <span className="hint-icon">🔐</span>
-            绑定到用户真实地址，这个地址是加密的，其他人无法获取
+            This address will be encrypted and only you can access it
           </div>
         </div>
 
@@ -169,16 +169,16 @@ export function BindXAccount() {
             {loading ? '⏳' : fheLoading ? '⏱️' : '🔗'}
           </span>
           <span className="button-text">
-            {loading ? '绑定中...' : fheLoading ? '等待加密模块...' : '绑定X账号'}
+            {loading ? 'Binding...' : fheLoading ? 'Waiting for FHE...' : 'Bind X Account'}
           </span>
           <div className="button-shimmer"></div>
         </button>
       </div>
       
       {message && (
-        <div className={`message ${message.includes('失败') || message.includes('请输入') ? 'error' : 'success'}`}>
+        <div className={`message ${message.includes('failed') || message.includes('Please') ? 'error' : 'success'}`}>
           <div className="message-icon">
-            {message.includes('失败') || message.includes('请输入') ? '❌' : '✅'}
+            {message.includes('failed') || message.includes('Please') ? '❌' : '✅'}
           </div>
           <div className="message-content">
             {message}
