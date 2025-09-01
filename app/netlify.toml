@@ -7,6 +7,18 @@
   for = "*.mjs"
   [headers.values]
     Content-Type = "application/javascript; charset=utf-8"
+    
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [[headers]]
   for = "*.wasm"
